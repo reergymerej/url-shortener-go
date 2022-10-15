@@ -8,5 +8,6 @@ This is a url shortener written in Golang.
 
 ### Test
 ```
+cd src
 go test . -cover
 ```
