@@ -5,28 +5,29 @@ import (
 	"testing"
 )
 
+type DefaultIdProvider struct{}
+
+func (d *DefaultIdProvider) GetId() string {
+	return "123abc"
+}
+
+type StatefulIdProvider struct {
+	Count int
+}
+
+func (s *StatefulIdProvider) GetId() string {
+	s.Count++
+	return fmt.Sprintf("id-%v", s.Count)
+}
+
 func TestSanity(t *testing.T) {
 	main()
 }
 
 func TestConvert(t *testing.T) {
-	t.Run("should return a string", func(t *testing.T) {
-		input := "hello"
-		idProvider := func(input string) string {
-			return "fake-id"
-		}
-		got := convert(input, idProvider)
-		want := "TODO: IOU one real conversion" + idProvider(input)
-		if got != want {
-			t.Errorf("got %s, want %s", got, want)
-		}
-	})
-
 	t.Run("should be different than input", func(t *testing.T) {
 		input := "hello"
-		idProvider := func(input string) string {
-			return "fake-id"
-		}
+		idProvider := &DefaultIdProvider{}
 		got := convert(input, idProvider)
 		if input == got {
 			t.Errorf("got %v", got)
@@ -34,11 +35,7 @@ func TestConvert(t *testing.T) {
 	})
 
 	t.Run("should not return the same code", func(t *testing.T) {
-		state := 0
-		idProvider := func(input string) string {
-			state++
-			return fmt.Sprintf("id-%v", state)
-		}
+		idProvider := &StatefulIdProvider{}
 		input := "hello"
 		got1 := convert(input, idProvider)
 		got2 := convert(input, idProvider)

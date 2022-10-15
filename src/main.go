@@ -1,7 +1,11 @@
 package main
 
-func convert(input string, idProvider func(input string) string) string {
-	return "TODO: IOU one real conversion" + idProvider(input)
+type IdProvider interface {
+	GetId() string
+}
+
+func convert(input string, idProvider IdProvider) string {
+	return "TODO: IOU one real conversion" + idProvider.GetId()
 }
 
 func main() {
