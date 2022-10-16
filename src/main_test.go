@@ -10,11 +10,12 @@ func TestSanity(t *testing.T) {
 
 type IdProviderSpy struct {
 	Calls []string
+	id    string
 }
 
 func (i *IdProviderSpy) GetId(id string) string {
 	i.Calls = append(i.Calls, id)
-	return "dummy id"
+	return i.id
 }
 
 type ValueProviderSpy struct {
@@ -37,7 +38,7 @@ func (m *MockValueProvider) GetValue(id string) string {
 func TestConvert(t *testing.T) {
 	t.Run("should be different than input", func(t *testing.T) {
 		input := "hello"
-		idProvider := &StatefulIdProvider{}
+		idProvider := &SimpleIdProvider{}
 		got := convert(idProvider, input)
 		if input == got {
 			t.Errorf("got %v", got)
@@ -45,7 +46,7 @@ func TestConvert(t *testing.T) {
 	})
 
 	t.Run("should not return the same id", func(t *testing.T) {
-		idProvider := &StatefulIdProvider{}
+		idProvider := &SimpleIdProvider{}
 		input := "hello"
 		got1 := convert(idProvider, input)
 		got2 := convert(idProvider, input)
@@ -128,5 +129,37 @@ func TestJelloValueProvider(t *testing.T) {
 		jelloValueProvider := &JelloValueProvider{}
 		id := "depechemode"
 		lookup(jelloValueProvider, id)
+	})
+}
+
+func TestConverter(t *testing.T) {
+	t.Run("should convert from id to value", func(t *testing.T) {
+		value := "personal"
+		defaultConverter := &DefaultConverter{
+			valueProvider: &MockValueProvider{
+				value: "personal",
+			},
+		}
+		id := "jesus"
+		got := defaultConverter.GetValue(id)
+		want := value
+		if got != want {
+			t.Errorf("\ngot: %v\nwant: %v", got, want)
+		}
+	})
+
+	t.Run("should convert from value to id", func(t *testing.T) {
+		id := "neveragain!"
+		defaultConverter := &DefaultConverter{
+			idProvider: &IdProviderSpy{
+				id: id,
+			},
+		}
+		value := "jesus"
+		got := defaultConverter.GetId(value)
+		want := id
+		if got != want {
+			t.Errorf("\ngot: %v\nwant: %v", got, want)
+		}
 	})
 }

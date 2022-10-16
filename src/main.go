@@ -10,11 +10,11 @@ type ValueProvider interface {
 	GetValue(id string) string
 }
 
-type StatefulIdProvider struct {
+type SimpleIdProvider struct {
 	Count int
 }
 
-func (s *StatefulIdProvider) GetId(value string) string {
+func (s *SimpleIdProvider) GetId(value string) string {
 	s.Count++
 	return fmt.Sprintf("id-%v", s.Count)
 }
@@ -31,6 +31,19 @@ type JelloValueProvider struct{}
 
 func (j *JelloValueProvider) GetValue(id string) string {
 	return "Jello"
+}
+
+type DefaultConverter struct {
+	valueProvider ValueProvider
+	idProvider    IdProvider
+}
+
+func (d *DefaultConverter) GetValue(id string) string {
+	return d.valueProvider.GetValue(id)
+}
+
+func (d *DefaultConverter) GetId(value string) string {
+	return d.idProvider.GetId(value)
 }
 
 func convert(idProvider IdProvider, value string) string {
