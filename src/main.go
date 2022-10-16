@@ -3,18 +3,18 @@ package main
 import "fmt"
 
 type IdProvider interface {
-	GetId() string
+	GetId(value string) string
 }
 
 type ValueProvider interface {
-	GetValue(code string) string
+	GetValue(id string) string
 }
 
 type StatefulIdProvider struct {
 	Count int
 }
 
-func (s *StatefulIdProvider) GetId() string {
+func (s *StatefulIdProvider) GetId(value string) string {
 	s.Count++
 	return fmt.Sprintf("id-%v", s.Count)
 }
@@ -23,16 +23,22 @@ type CodeValueProvider struct {
 	valueMap map[string]string
 }
 
-func (c *CodeValueProvider) GetValue(code string) string {
-	return c.valueMap[code]
+func (c *CodeValueProvider) GetValue(id string) string {
+	return c.valueMap[id]
 }
 
-func convert(idProvider IdProvider, input string) string {
-	return idProvider.GetId()
+type JelloValueProvider struct{}
+
+func (j *JelloValueProvider) GetValue(id string) string {
+	return "Jello"
 }
 
-func lookup(valueProvider ValueProvider, code string) string {
-	return valueProvider.GetValue(code)
+func convert(idProvider IdProvider, value string) string {
+	return idProvider.GetId(value)
+}
+
+func lookup(valueProvider ValueProvider, id string) string {
+	return valueProvider.GetValue("xxx")
 }
 
 func main() {

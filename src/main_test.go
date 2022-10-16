@@ -8,6 +8,32 @@ func TestSanity(t *testing.T) {
 	main()
 }
 
+type IdProviderSpy struct {
+	Calls []string
+}
+
+func (i *IdProviderSpy) GetId(id string) string {
+	i.Calls = append(i.Calls, id)
+	return "dummy id"
+}
+
+type ValueProviderSpy struct {
+	Calls []string
+}
+
+func (v *ValueProviderSpy) GetValue(id string) string {
+	v.Calls = append(v.Calls, id)
+	return "dummy value"
+}
+
+type MockValueProvider struct {
+	value string
+}
+
+func (m *MockValueProvider) GetValue(id string) string {
+	return m.value
+}
+
 func TestConvert(t *testing.T) {
 	t.Run("should be different than input", func(t *testing.T) {
 		input := "hello"
@@ -18,7 +44,7 @@ func TestConvert(t *testing.T) {
 		}
 	})
 
-	t.Run("should not return the same code", func(t *testing.T) {
+	t.Run("should not return the same id", func(t *testing.T) {
 		idProvider := &StatefulIdProvider{}
 		input := "hello"
 		got1 := convert(idProvider, input)
@@ -27,14 +53,19 @@ func TestConvert(t *testing.T) {
 			t.Errorf("got %s, %s", got1, got2)
 		}
 	})
-}
 
-type MockValueProvider struct {
-	value string
-}
-
-func (m *MockValueProvider) GetValue(code string) string {
-	return m.value
+	t.Run("should call GetId correctly", func(t *testing.T) {
+		idProviderSpy := &IdProviderSpy{
+			Calls: []string{},
+		}
+		input := "underwater"
+		want := input
+		convert(idProviderSpy, input)
+		got := idProviderSpy.Calls[0]
+		if got != want {
+			t.Errorf("\ngot: %v\nwant: %v", got, want)
+		}
+	})
 }
 
 func TestLookup(t *testing.T) {
@@ -43,9 +74,23 @@ func TestLookup(t *testing.T) {
 		codeValueProvider := &MockValueProvider{
 			value: mockValue,
 		}
-		code := "a sweet code"
-		got := lookup(codeValueProvider, code)
+		id := "a sweet id"
+		got := lookup(codeValueProvider, id)
 		want := mockValue
+		if got != want {
+			t.Errorf("\ngot: %v\nwant: %v", got, want)
+		}
+	})
+
+	t.Run("should call GetValue correctly", func(t *testing.T) {
+		t.Skip()
+		spy := &ValueProviderSpy{
+			Calls: []string{},
+		}
+		value := "icouldlose"
+		want := value
+		lookup(spy, value)
+		got := spy.Calls[0]
 		if got != want {
 			t.Errorf("\ngot: %v\nwant: %v", got, want)
 		}
@@ -54,17 +99,34 @@ func TestLookup(t *testing.T) {
 
 func TestCodeValueProvider(t *testing.T) {
 	t.Run("GetValue should return the correct value", func(t *testing.T) {
-		code := "some-code"
+		id := "some-id"
 		value := "some sweet value"
 		valueMap := make(map[string]string)
-		valueMap[code] = value
+		valueMap[id] = value
 		codeValueProvider := &CodeValueProvider{
 			valueMap: valueMap,
 		}
-		got := codeValueProvider.GetValue(code)
+		got := codeValueProvider.GetValue(id)
 		want := value
 		if got != want {
 			t.Errorf("\ngot: %v\nwant: %v", got, want)
 		}
+	})
+}
+
+func TestJelloValueProvider(t *testing.T) {
+	t.Run("should return 'Jello'", func(t *testing.T) {
+		jelloValueProvider := &JelloValueProvider{}
+		got := jelloValueProvider.GetValue("xyz")
+		want := "Jello"
+		if got != want {
+			t.Errorf("\ngot: %v\nwant: %v", got, want)
+		}
+	})
+
+	t.Run("should work with lookup", func(t *testing.T) {
+		jelloValueProvider := &JelloValueProvider{}
+		id := "depechemode"
+		lookup(jelloValueProvider, id)
 	})
 }
