@@ -35,69 +35,6 @@ func (m *MockValueProvider) GetValue(id string) string {
 	return m.value
 }
 
-func TestConvert(t *testing.T) {
-	t.Run("should be different than input", func(t *testing.T) {
-		input := "hello"
-		idProvider := &SimpleIdProvider{}
-		got := convert(idProvider, input)
-		if input == got {
-			t.Errorf("got %v", got)
-		}
-	})
-
-	t.Run("should not return the same id", func(t *testing.T) {
-		idProvider := &SimpleIdProvider{}
-		input := "hello"
-		got1 := convert(idProvider, input)
-		got2 := convert(idProvider, input)
-		if got1 == got2 {
-			t.Errorf("got %s, %s", got1, got2)
-		}
-	})
-
-	t.Run("should call GetId correctly", func(t *testing.T) {
-		idProviderSpy := &IdProviderSpy{
-			Calls: []string{},
-		}
-		input := "underwater"
-		want := input
-		convert(idProviderSpy, input)
-		got := idProviderSpy.Calls[0]
-		if got != want {
-			t.Errorf("\ngot: %v\nwant: %v", got, want)
-		}
-	})
-}
-
-func TestLookup(t *testing.T) {
-	t.Run("should return original string", func(t *testing.T) {
-		mockValue := "good boy"
-		codeValueProvider := &MockValueProvider{
-			value: mockValue,
-		}
-		id := "a sweet id"
-		got := lookup(codeValueProvider, id)
-		want := mockValue
-		if got != want {
-			t.Errorf("\ngot: %v\nwant: %v", got, want)
-		}
-	})
-
-	t.Run("should call GetValue correctly", func(t *testing.T) {
-		t.Skip()
-		spy := &ValueProviderSpy{
-			Calls: []string{},
-		}
-		value := "icouldlose"
-		want := value
-		lookup(spy, value)
-		got := spy.Calls[0]
-		if got != want {
-			t.Errorf("\ngot: %v\nwant: %v", got, want)
-		}
-	})
-}
-
 func TestCodeValueProvider(t *testing.T) {
 	t.Run("GetValue should return the correct value", func(t *testing.T) {
 		id := "some-id"
@@ -123,12 +60,6 @@ func TestJelloValueProvider(t *testing.T) {
 		if got != want {
 			t.Errorf("\ngot: %v\nwant: %v", got, want)
 		}
-	})
-
-	t.Run("should work with lookup", func(t *testing.T) {
-		jelloValueProvider := &JelloValueProvider{}
-		id := "depechemode"
-		lookup(jelloValueProvider, id)
 	})
 }
 
